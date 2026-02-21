@@ -5,6 +5,7 @@ use App\Http\Controllers\ActionlogController;
 use App\Http\Controllers\Api\ImportController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\BulkCategoriesController;
 use App\Http\Controllers\BulkManufacturersController;
@@ -711,6 +712,10 @@ Route::group(['middleware' => 'web'], function () {
      // Socialite Google login
     Route::get('google', 'App\Http\Controllers\GoogleAuthController@redirectToGoogle')->name('google.redirect');
     Route::get('google/callback', 'App\Http\Controllers\GoogleAuthController@handleGoogleCallback')->name('google.callback');
+
+    // OAuth2 login
+    Route::get('oauth/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
+    Route::get('oauth/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
 
     // need to keep GET /logout for SAML SLO

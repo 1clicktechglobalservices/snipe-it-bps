@@ -48,4 +48,13 @@ return [
         'maps_api_key' => env('GOOGLE_MAPS_API'),
     ],
 
+    'oauth' => [
+        'client_id'     => env('OAUTH_CLIENT_ID'),
+        'client_secret' => env('OAUTH_CLIENT_SECRET'),
+        'token_uri'     => env('OAUTH_TOKEN_URI'),
+        'issuer_uri'    => env('OAUTH_ISSUER_URI'),
+        'sso_login_url' => env('OAUTH_SSO_LOGIN_URL', 'https://api.uat.1clicktech.in/api/access/sso/login'),
+        'redirect_uri'  => env('OAUTH_REDIRECT_URI', env('APP_URL', 'http://localhost:8000') . '/oauth/callback'),
+    ],
+
 ];

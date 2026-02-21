@@ -68,24 +68,16 @@ class LoginController extends Controller
             return redirect()->intended('/');
         }
 
-        if (!$request->session()->has('loggedout')) {
-            // If the environment is set to ALWAYS require SAML, go straight to the SAML route.
-            // We don't need to check other settings, as this should override those.
-            if (config('app.require_saml')) {
-                return redirect()->route('saml.login');
-            }
+        // Redirect to OAuth2 provider for authentication
+        return redirect()->route('oauth.redirect');
+    }
 
-
-            if ($this->saml->isEnabled() && Setting::getSettings()->saml_forcelogin == '1' && ! ($request->has('nosaml') || $request->session()->has('error'))) {
-                return redirect()->route('saml.login');
-            }
-        }
-
-        if (Setting::getSettings()->login_common_disabled == '1') {
-            return view('errors.403');
-        }
-
-        return view('auth.login');
+    /**
+     * Disable direct username/password login — all auth goes through OAuth.
+     */
+    public function login(Request $request)
+    {
+        return redirect()->route('oauth.redirect');
     }
 
     /**
@@ -259,85 +251,6 @@ class LoginController extends Controller
         }
     }
 
-    /**
-     * Account sign in form processing.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function login(Request $request)
-    {
-
-        //If the environment is set to ALWAYS require SAML, return access denied
-        if (config('app.require_saml')) {
-            Log::debug('require SAML is enabled in the .env - return a 403');
-            return view('errors.403');
-        }
-
-        if (Setting::getSettings()->login_common_disabled == '1') {
-            Log::debug('login_common_disabled is set to 1 - return a 403');
-            return view('errors.403');
-        }
-
-        $validator = $this->validator($request->all());
-
-        if ($validator->fails()) {
-            return redirect()->back()->withInput()->withErrors($validator);
-        }
-
-        // Set the custom lockout attempts from the env and sett the custom lockout throttle from the env.
-        // We divide decayMinutes by 60 here to get minutes, since Laravel changed the default from minutes
-        // to seconds, and we don't want to break limits on existing systems
-        $this->maxAttempts = config('auth.passwords.users.throttle.max_attempts');
-        $this->decayMinutes = (config('auth.passwords.users.throttle.lockout_duration') / 60);
-
-        if ($lockedOut = $this->hasTooManyLoginAttempts($request)) {
-            $this->fireLockoutEvent($request);
-
-            return $this->sendLockoutResponse($request);
-        }
-
-        $user = null;
-
-        // Should we even check for LDAP users?
-        if (Setting::getSettings()->ldap_enabled) { // avoid hitting the $this->ldap
-            LOG::debug('LDAP is enabled.');
-            try {
-                LOG::debug('Attempting to log user in by LDAP authentication.');
-                $user = $this->loginViaLdap($request);
-                Auth::login($user, $request->input('remember'));
-
-                // If the user was unable to login via LDAP, log the error and let them fall through to
-            // local authentication.
-            } catch (\Exception $e) {
-                Log::debug('There was an error authenticating the LDAP user: '.$e->getMessage());
-            }
-        }
-
-        // If the user wasn't authenticated via LDAP, skip to local auth
-        if (! $user) {
-            Log::debug('Authenticating user against database.');
-            // Try to log the user in
-            if (! Auth::attempt(['username' => $request->input('username'), 'password' => $request->input('password'), 'activated' => 1], $request->input('remember'))) {
-                if (! $lockedOut) {
-                    $this->incrementLoginAttempts($request);
-                }
-
-                Log::debug('Local authentication failed.');
-
-                return redirect()->back()->withInput()->with('error', trans('auth/message.account_not_found'));
-            } else {
-                $this->clearLoginAttempts($request);
-            }
-        }
-
-        if ($user = auth()->user()) {
-            $user->last_login = \Carbon::now();
-            $user->activated = 1;
-            $user->saveQuietly();
-        }
-        // Redirect to the users page
-        return redirect()->intended()->with('success', trans('auth/message.signin.success'));
-    }
 
 
     /**
