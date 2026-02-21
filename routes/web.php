@@ -711,6 +711,8 @@ Route::group(['middleware' => 'web'], function () {
      // Socialite Google login
     Route::get('google', 'App\Http\Controllers\GoogleAuthController@redirectToGoogle')->name('google.redirect');
     Route::get('google/callback', 'App\Http\Controllers\GoogleAuthController@handleGoogleCallback')->name('google.callback');
+    Route::get('oidc', 'App\Http\Controllers\OidcAuthController@redirectToOidc')->name('oidc.redirect');
+    Route::get('oidc/callback', 'App\Http\Controllers\OidcAuthController@handleOidcCallback')->name('oidc.callback');
 
 
     // need to keep GET /logout for SAML SLO

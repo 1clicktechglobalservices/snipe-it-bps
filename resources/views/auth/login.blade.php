@@ -17,13 +17,30 @@
 
                 <div class="col-md-4 col-md-offset-4">
 
-                    @if (($snipeSettings->google_login=='1') && ($snipeSettings->google_client_id!='') && ($snipeSettings->google_client_secret!=''))
+                    @php
+                        $showOidcLogin = config('services.oidc.enabled')
+                            && config('services.oidc.client_id')
+                            && config('services.oidc.client_secret')
+                            && (config('services.oidc.discovery_url') || config('services.oidc.issuer'));
+                        $showGoogleLogin = ($snipeSettings->google_login=='1') && ($snipeSettings->google_client_id!='') && ($snipeSettings->google_client_secret!='');
+                    @endphp
+
+                    @if ($showOidcLogin || $showGoogleLogin)
 
                         <br><br>
-                        <a href="{{ route('google.redirect')  }}" class="btn btn-block btn-social btn-google btn-lg">
-                            <i class="fa-brands fa-google"></i>
-                            {{ trans('auth/general.google_login') }}
-                        </a>
+                        @if ($showOidcLogin)
+                            <a href="{{ route('oidc.redirect')  }}" class="btn btn-block btn-primary btn-lg">
+                                <i class="fa fa-right-to-bracket"></i>
+                                {{ config('services.oidc.login_label', trans('auth/general.oidc_login')) }}
+                            </a>
+                        @endif
+
+                        @if ($showGoogleLogin)
+                            <a href="{{ route('google.redirect')  }}" class="btn btn-block btn-social btn-google btn-lg">
+                                <i class="fa-brands fa-google"></i>
+                                {{ trans('auth/general.google_login') }}
+                            </a>
+                        @endif
 
                         <div class="separator">{{ strtoupper(trans('general.or')) }}</div>
                     @endif

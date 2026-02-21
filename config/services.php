@@ -48,4 +48,16 @@ return [
         'maps_api_key' => env('GOOGLE_MAPS_API'),
     ],
 
+    'oidc' => [
+        'enabled' => env('OIDC_ENABLED', false),
+        'discovery_url' => env('OIDC_DISCOVERY_URL'),
+        'issuer' => env('OIDC_ISSUER', env('OAUTH_ISSUER_URI')),
+        'client_id' => env('OIDC_CLIENT_ID', env('OAUTH_CLIENT_ID')),
+        'client_secret' => env('OIDC_CLIENT_SECRET', env('OAUTH_CLIENT_SECRET')),
+        'redirect' => env('OIDC_REDIRECT_URI'),
+        'scopes' => env('OIDC_SCOPES', 'openid profile email'),
+        'username_claim' => env('OIDC_USERNAME_CLAIM', 'preferred_username'),
+        'login_label' => env('OIDC_LOGIN_LABEL', 'Login with SSO'),
+    ],
+
 ];
