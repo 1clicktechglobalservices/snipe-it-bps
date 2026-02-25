@@ -770,6 +770,11 @@ Route::withoutMiddleware(['web'])->get(
 )->name('health');
 
 
+Route::get('/api-docs', function () {
+    return redirect('/swagger/index.html');
+})->name('api.docs');
+
+
 Route::middleware(['auth'])->get(
     '/',
     [DashboardController::class, 'index']
